@@ -23,6 +23,7 @@ def transcribe_audio(
 
     result = whisper_model.transcribe(
         temp_audio_path,
+        language="hi",
         fp16=False,
         beam_size=5,
         temperature=0

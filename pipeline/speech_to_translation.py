@@ -10,6 +10,14 @@ from translation.translator import (
 
 from tts.tts_engine import speak
 
+# 1. Added "ur" (Urdu) to handle Whisper's confusion between Hindi/Urdu
+WHISPER_TO_NLLB = {
+    "en": "eng_Latn",
+    "hi": "hin_Deva",
+    "ur": "urd_Arab", 
+    "es": "spa_Latn",
+    "fr": "fra_Latn"
+}
 
 def run_pipeline(manager):
 
@@ -44,10 +52,18 @@ def run_pipeline(manager):
 
         print("\n===== STEP 3 : TRANSLATE =====")
 
+        # Map Whisper's detected language to NLLB's format
+        nllb_src_lang = WHISPER_TO_NLLB.get(language, "eng_Latn")
+        
+        # 2. FORCE target language to always be English
+        nllb_tgt_lang = "eng_Latn" 
+
         translated_text = translate_text(
-            source_text,
-            manager.tokenizer,
-            manager.translator_model
+            text=source_text,
+            tokenizer=manager.tokenizer,
+            translator_model=manager.translator_model,
+            source_lang=nllb_src_lang,
+            target_lang=nllb_tgt_lang
         )
 
         print("\nTranslation:")

@@ -2,9 +2,6 @@ import time
 import sounddevice as sd
 from scipy.io.wavfile import write
 
-MIC_DEVICE = 5
-
-
 def record_audio(
     output_path="outputs/input.wav",
     duration=5,
@@ -20,12 +17,13 @@ def record_audio(
 
     start = time.time()
 
+    # Device is set to None to let the system automatically select the default mic
     audio = sd.rec(
         int(duration * sample_rate),
         samplerate=sample_rate,
         channels=1,
         dtype="int16",
-        device=MIC_DEVICE
+        device=None
     )
 
     sd.wait()
