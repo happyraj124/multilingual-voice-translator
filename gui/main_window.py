@@ -1,5 +1,6 @@
 import threading
 import customtkinter as ctk
+from translation.languages import LANGUAGES
 
 from pipeline.speech_to_translation import (
     process_audio
@@ -131,6 +132,9 @@ class MainWindow:
                 "Spanish",
                 "French"
             ]
+        )
+        self.source_lang_menu.set(
+            "Auto Detect"
         )
 
         self.source_lang_menu.pack(
@@ -366,8 +370,20 @@ class MainWindow:
 
         self.progress_bar.set(0)
 
+        source_language = (
+            self.source_lang_menu.get()
+        )
+
+        target_language = (
+            self.target_lang_menu.get()
+        )
+
         worker = threading.Thread(
             target=self.run_pipeline_worker,
+            args=(
+                source_language,
+                target_language
+            ),
             daemon=True
         )
 
@@ -377,7 +393,11 @@ class MainWindow:
     # BACKGROUND WORKER
     # ==========================
 
-    def run_pipeline_worker(self):
+    def run_pipeline_worker(
+    self,
+    source_language,
+    target_language
+):
 
         try:
 
@@ -392,9 +412,27 @@ class MainWindow:
 
             self.update_progress(0.1)
 
+            # Auto Detect support
+
+            if source_language == "Auto Detect":
+
+                source_lang_code = None
+
+            else:
+
+                source_lang_code = LANGUAGES[
+                    source_language
+                ]
+
+            target_lang_code = LANGUAGES[
+                target_language
+            ]
+
             source_text, translated_text, language = (
                 process_audio(
                     self.model_manager,
+                    source_lang=source_lang_code,
+                    target_lang=target_lang_code,
                     status_callback=self.update_status
                 )
             )

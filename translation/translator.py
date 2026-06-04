@@ -2,10 +2,13 @@ def translate_text(
     text,
     tokenizer,
     translator_model,
-    source_lang="hin_Deva",
-    target_lang="eng_Latn"
+    source_lang,
+    target_lang
 ):
-    # 1. Explicitly set the source language on the tokenizer
+
+    if not text.strip():
+        return ""
+
     tokenizer.src_lang = source_lang
 
     inputs = tokenizer(
@@ -19,7 +22,7 @@ def translate_text(
         tokenizer.convert_tokens_to_ids(
             target_lang
         ),
-        max_length=50  # 2. Prevents the model from generating infinitely long, looping outputs
+        max_length=50
     )
 
     translated_text = tokenizer.batch_decode(

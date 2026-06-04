@@ -20,18 +20,29 @@ WHISPER_TO_NLLB = {
 }
 
 
-def process_audio(manager, status_callback=None):
+def process_audio(
+    manager,
+    source_lang,
+    target_lang,
+    status_callback=None
+):
 
-    # Step 1: Record
+    # ==========================
+    # Step 1: Record Audio
+    # ==========================
 
     audio_path = record_audio(
         status_callback=status_callback
     )
 
-    if status_callback:
-        status_callback("Transcribing...")
+    # ==========================
+    # Step 2: Speech-to-Text
+    # ==========================
 
-    # Step 2: STT
+    if status_callback:
+        status_callback(
+            "Transcribing..."
+        )
 
     stt_result = transcribe_audio(
         manager.whisper_model,
@@ -40,38 +51,52 @@ def process_audio(manager, status_callback=None):
 
     source_text = stt_result["text"]
 
-    language = stt_result["language"]
+    detected_language = stt_result["language"]
 
     if status_callback:
         status_callback(
-            f"Detected: {language}"
+            f"Detected: {detected_language}"
         )
 
+    # ==========================
+    # Auto Detect Handling
+    # ==========================
+
+    if source_lang is None:
+
+        source_lang = (
+            WHISPER_TO_NLLB.get(
+                detected_language,
+                "eng_Latn"
+            )
+        )
+
+    # ==========================
     # Step 3: Translation
-
-    nllb_src_lang = (
-        WHISPER_TO_NLLB.get(
-            language,
-            "eng_Latn"
-        )
-    )
-
-    nllb_tgt_lang = "eng_Latn"
+    # ==========================
 
     if status_callback:
         status_callback(
             "Translating..."
         )
 
-    translated_text = translate_text(
-        text=source_text,
-        tokenizer=manager.tokenizer,
-        translator_model=manager.translator_model,
-        source_lang=nllb_src_lang,
-        target_lang=nllb_tgt_lang
-    )
+    if source_lang == target_lang:
 
-    # Step 4: TTS
+        translated_text = source_text
+
+    else:
+
+        translated_text = translate_text(
+            text=source_text,
+            tokenizer=manager.tokenizer,
+            translator_model=manager.translator_model,
+            source_lang=source_lang,
+            target_lang=target_lang
+        )
+
+    # ==========================
+    # Step 4: Text-to-Speech
+    # ==========================
 
     if status_callback:
         status_callback(
@@ -80,8 +105,12 @@ def process_audio(manager, status_callback=None):
 
     speak(translated_text)
 
+    # ==========================
+    # Return Results
+    # ==========================
+
     return (
         source_text,
         translated_text,
-        language
+        detected_language
     )
