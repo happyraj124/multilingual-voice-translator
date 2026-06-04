@@ -93,6 +93,10 @@ class MainWindow:
 
     def create_widgets(self):
 
+        # ==========================
+        # Title
+        # ==========================
+
         self.title_label = ctk.CTkLabel(
             self.header_frame,
             text="Multilingual Voice Translator",
@@ -103,17 +107,101 @@ class MainWindow:
             pady=10
         )
 
-        self.record_button = ctk.CTkButton(
+        # ==========================
+        # Language Selection
+        # ==========================
+
+        self.language_frame = ctk.CTkFrame(
+            self.control_frame
+        )
+
+        self.language_frame.pack(
+            fill="x",
+            padx=10,
+            pady=10
+        )
+
+        self.source_lang_menu = ctk.CTkOptionMenu(
+            self.language_frame,
+            values=[
+                "Auto Detect",
+                "Hindi",
+                "English",
+                "Urdu",
+                "Spanish",
+                "French"
+            ]
+        )
+
+        self.source_lang_menu.pack(
+            side="left",
+            padx=10,
+            pady=10
+        )
+
+        self.target_lang_menu = ctk.CTkOptionMenu(
+            self.language_frame,
+            values=[
+                "English",
+                "Hindi",
+                "Urdu",
+                "Spanish",
+                "French"
+            ]
+        )
+
+        self.target_lang_menu.set(
+            "English"
+        )
+
+        self.target_lang_menu.pack(
+            side="left",
+            padx=10,
+            pady=10
+        )
+
+        # ==========================
+        # Buttons
+        # ==========================
+
+        self.button_frame = ctk.CTkFrame(
             self.control_frame,
+            fg_color="transparent"
+        )
+
+        self.button_frame.pack(
+            pady=10
+        )
+
+        self.record_button = ctk.CTkButton(
+            self.button_frame,
             text="🎤 Start Recording",
-            width=250,
-            height=50,
+            width=220,
+            height=45,
             command=self.start_recording
         )
 
         self.record_button.pack(
-            pady=15
+            side="left",
+            padx=10
         )
+
+        self.clear_button = ctk.CTkButton(
+            self.button_frame,
+            text="🗑 Clear",
+            width=120,
+            height=45,
+            command=self.clear_text
+        )
+
+        self.clear_button.pack(
+            side="left",
+            padx=10
+        )
+
+        # ==========================
+        # Source Text
+        # ==========================
 
         self.source_label = ctk.CTkLabel(
             self.source_frame,
@@ -138,6 +226,10 @@ class MainWindow:
             pady=5
         )
 
+        # ==========================
+        # Translation Text
+        # ==========================
+
         self.translation_label = ctk.CTkLabel(
             self.translation_frame,
             text="Translation"
@@ -161,6 +253,26 @@ class MainWindow:
             pady=5
         )
 
+        # ==========================
+        # Progress Bar
+        # ==========================
+
+        self.progress_bar = ctk.CTkProgressBar(
+            self.status_frame
+        )
+
+        self.progress_bar.pack(
+            fill="x",
+            padx=10,
+            pady=(10, 5)
+        )
+
+        self.progress_bar.set(0)
+
+        # ==========================
+        # Status Label
+        # ==========================
+
         self.status_label = ctk.CTkLabel(
             self.status_frame,
             text="Status: Ready"
@@ -173,7 +285,7 @@ class MainWindow:
         )
 
     # ==========================
-    # THREAD-SAFE GUI METHODS
+    # THREAD SAFE METHODS
     # ==========================
 
     def update_status(self, message):
@@ -184,6 +296,14 @@ class MainWindow:
             self.status_label.configure(
                 text=f"Status: {message}"
             )
+        )
+
+    def update_progress(self, value):
+
+        self.root.after(
+            0,
+            lambda:
+            self.progress_bar.set(value)
         )
 
     def update_textboxes(
@@ -213,7 +333,29 @@ class MainWindow:
         )
 
     # ==========================
-    # BUTTON HANDLER
+    # CLEAR BUTTON
+    # ==========================
+
+    def clear_text(self):
+
+        self.source_textbox.delete(
+            "1.0",
+            "end"
+        )
+
+        self.translation_textbox.delete(
+            "1.0",
+            "end"
+        )
+
+        self.progress_bar.set(0)
+
+        self.update_status(
+            "Ready"
+        )
+
+    # ==========================
+    # RECORD BUTTON
     # ==========================
 
     def start_recording(self):
@@ -221,6 +363,8 @@ class MainWindow:
         self.record_button.configure(
             state="disabled"
         )
+
+        self.progress_bar.set(0)
 
         worker = threading.Thread(
             target=self.run_pipeline_worker,
@@ -246,12 +390,16 @@ class MainWindow:
                 )
             )
 
+            self.update_progress(0.1)
+
             source_text, translated_text, language = (
                 process_audio(
                     self.model_manager,
                     status_callback=self.update_status
                 )
             )
+
+            self.update_progress(0.8)
 
             self.root.after(
                 0,
@@ -261,6 +409,8 @@ class MainWindow:
                     translated_text
                 )
             )
+
+            self.update_progress(1.0)
 
             self.update_status(
                 f"Completed ({language})"
