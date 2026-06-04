@@ -2,42 +2,50 @@ import time
 import sounddevice as sd
 from scipy.io.wavfile import write
 
-def record_audio(
-    output_path="outputs/input.wav",
-    duration=5,
-    sample_rate=48000
-):
-    print("\nRecording starts in...")
 
-    for i in range(3, 0, -1):
-        print(i)
-        time.sleep(1)
+OUTPUT_FILE = "outputs/input.wav"
+SAMPLE_RATE = 48000
+DURATION = 5
+DEVICE_ID = 5
 
-    print("Speak now!")
 
-    start = time.time()
+def record_audio(status_callback=None):
 
-    # Device is set to None to let the system automatically select the default mic
-    audio = sd.rec(
-        int(duration * sample_rate),
-        samplerate=sample_rate,
+    if status_callback:
+        status_callback("Starting in 3...")
+
+    time.sleep(1)
+
+    if status_callback:
+        status_callback("Starting in 2...")
+
+    time.sleep(1)
+
+    if status_callback:
+        status_callback("Starting in 1...")
+
+    time.sleep(1)
+
+    if status_callback:
+        status_callback("Recording...")
+
+    recording = sd.rec(
+        int(DURATION * SAMPLE_RATE),
+        samplerate=SAMPLE_RATE,
         channels=1,
         dtype="int16",
-        device=None
+        device=DEVICE_ID
     )
 
     sd.wait()
 
-    end = time.time()
-
-    print(f"Recording duration: {end-start:.2f} seconds")
-
     write(
-        output_path,
-        sample_rate,
-        audio
+        OUTPUT_FILE,
+        SAMPLE_RATE,
+        recording
     )
 
-    print("Recording saved!")
+    if status_callback:
+        status_callback("Recording Complete")
 
-    return output_path
+    return OUTPUT_FILE

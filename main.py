@@ -2,22 +2,20 @@ from models.model_manager import (
     ModelManager
 )
 
-from pipeline.speech_to_translation import (
-    run_pipeline
+from gui.main_window import (
+    MainWindow
 )
 
 
 def main():
 
-    print(
-        "\nMULTILINGUAL VOICE TRANSLATOR\n"
-    )
-
     manager = ModelManager()
 
     manager.load_models()
 
-    run_pipeline(manager)
+    app = MainWindow(manager)
+
+    app.run()
 
 
 if __name__ == "__main__":

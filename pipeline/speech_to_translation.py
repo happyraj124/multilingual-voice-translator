@@ -10,65 +10,78 @@ from translation.translator import (
 
 from tts.tts_engine import speak
 
-# 1. Added "ur" (Urdu) to handle Whisper's confusion between Hindi/Urdu
+
 WHISPER_TO_NLLB = {
     "en": "eng_Latn",
     "hi": "hin_Deva",
-    "ur": "urd_Arab", 
+    "ur": "urd_Arab",
     "es": "spa_Latn",
     "fr": "fra_Latn"
 }
 
-def run_pipeline(manager):
 
-    while True:
+def process_audio(manager, status_callback=None):
 
-        choice = input(
-            "\nPress ENTER to record (q to quit): "
+    # Step 1: Record
+
+    audio_path = record_audio(
+        status_callback=status_callback
+    )
+
+    if status_callback:
+        status_callback("Transcribing...")
+
+    # Step 2: STT
+
+    stt_result = transcribe_audio(
+        manager.whisper_model,
+        audio_path
+    )
+
+    source_text = stt_result["text"]
+
+    language = stt_result["language"]
+
+    if status_callback:
+        status_callback(
+            f"Detected: {language}"
         )
 
-        if choice.lower() == "q":
-            break
+    # Step 3: Translation
 
-        print("\n===== STEP 1 : RECORD =====")
+    nllb_src_lang = (
+        WHISPER_TO_NLLB.get(
+            language,
+            "eng_Latn"
+        )
+    )
 
-        audio_path = record_audio()
+    nllb_tgt_lang = "eng_Latn"
 
-        print("\n===== STEP 2 : STT =====")
-
-        stt_result = transcribe_audio(
-            manager.whisper_model,
-            audio_path
+    if status_callback:
+        status_callback(
+            "Translating..."
         )
 
-        source_text = stt_result["text"]
-        language = stt_result["language"]
+    translated_text = translate_text(
+        text=source_text,
+        tokenizer=manager.tokenizer,
+        translator_model=manager.translator_model,
+        source_lang=nllb_src_lang,
+        target_lang=nllb_tgt_lang
+    )
 
-        print("\nDetected Language:")
-        print(language)
+    # Step 4: TTS
 
-        print("\nSource Text:")
-        print(source_text)
-
-        print("\n===== STEP 3 : TRANSLATE =====")
-
-        # Map Whisper's detected language to NLLB's format
-        nllb_src_lang = WHISPER_TO_NLLB.get(language, "eng_Latn")
-        
-        # 2. FORCE target language to always be English
-        nllb_tgt_lang = "eng_Latn" 
-
-        translated_text = translate_text(
-            text=source_text,
-            tokenizer=manager.tokenizer,
-            translator_model=manager.translator_model,
-            source_lang=nllb_src_lang,
-            target_lang=nllb_tgt_lang
+    if status_callback:
+        status_callback(
+            "Speaking..."
         )
 
-        print("\nTranslation:")
-        print(translated_text)
+    speak(translated_text)
 
-        print("\n===== STEP 4 : SPEAK =====")
-
-        speak(translated_text)
+    return (
+        source_text,
+        translated_text,
+        language
+    )
