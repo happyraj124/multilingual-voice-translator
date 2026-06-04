@@ -224,6 +224,19 @@ class MainWindow:
             padx=10
     )
 
+        self.export_button = ctk.CTkButton(
+            self.button_frame,
+            text="💾 Export",
+            width=120,
+            height=45,
+            command=self.export_history
+        )
+
+        self.export_button.pack(
+            side="left",
+            padx=10
+        )
+
         # ==========================
         # Source Text
         # ==========================
@@ -502,31 +515,83 @@ class MainWindow:
             )
     def show_history(self):
 
+        popup = ctk.CTkToplevel(
+            self.root
+        )
+
+        popup.title(
+            "Translation History"
+        )
+
+        popup.geometry(
+            "900x600"
+        )
+
+        textbox = ctk.CTkTextbox(
+            popup
+        )
+
+        textbox.pack(
+            fill="both",
+            expand=True,
+            padx=10,
+            pady=10
+        )
+
         history = (
             self.history_manager.get_history()
         )
 
-        print("\n===== HISTORY =====")
+        if not history:
+
+            textbox.insert(
+                "end",
+                "No history available."
+            )
+
+            textbox.configure(
+                state="disabled"
+            )
+
+            return
 
         for item in history:
 
-            print(
-                f"\n{item['timestamp']}"
+            textbox.insert(
+                "end",
+                f"""
+    ==================================================
+
+    Time:
+    {item['timestamp']}
+
+    {item['source_language']}
+    →
+    {item['target_language']}
+
+    Source:
+    {item['source_text']}
+
+    Translation:
+    {item['translated_text']}
+
+    """
             )
 
-            print(
-                f"{item['source_language']} -> "
-                f"{item['target_language']}"
-            )
+        textbox.configure(
+            state="disabled"
+        )
 
-            print(
-                item['source_text']
-            )
+    def export_history(self):
 
-            print(
-                item['translated_text']
-            )
-            
+        filename = (
+            self.history_manager.export_csv()
+        )
+
+        self.update_status(
+            f"Exported: {filename}"
+        )
+
     def run(self):
 
         self.root.mainloop()
