@@ -2,6 +2,14 @@ import threading
 import customtkinter as ctk
 from translation.languages import LANGUAGES
 
+from history.history_manager import (
+    HistoryManager
+)
+
+from translation.language_manager import (
+    LanguageManager
+)
+
 from pipeline.speech_to_translation import (
     process_audio
 )
@@ -12,6 +20,7 @@ class MainWindow:
     def __init__(self, model_manager):
 
         self.model_manager = model_manager
+        self.history_manager = HistoryManager()
 
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
@@ -202,6 +211,18 @@ class MainWindow:
             side="left",
             padx=10
         )
+        self.history_button = ctk.CTkButton(
+        self.button_frame,
+        text="📜 History",
+        width=120,
+        height=45,
+        command=self.show_history
+    )
+
+        self.history_button.pack(
+            side="left",
+            padx=10
+    )
 
         # ==========================
         # Source Text
@@ -420,13 +441,17 @@ class MainWindow:
 
             else:
 
-                source_lang_code = LANGUAGES[
-                    source_language
-                ]
+                source_lang_code = (
+                    LanguageManager.get_code(
+                        source_language
+                    )
+                )
 
-            target_lang_code = LANGUAGES[
-                target_language
-            ]
+            target_lang_code = (
+                LanguageManager.get_code(
+                    target_language
+                )
+            )
 
             source_text, translated_text, language = (
                 process_audio(
@@ -435,6 +460,12 @@ class MainWindow:
                     target_lang=target_lang_code,
                     status_callback=self.update_status
                 )
+            )
+            self.history_manager.add_record(
+                source_language=source_language,
+                target_language=target_language,
+                source_text=source_text,
+                translated_text=translated_text
             )
 
             self.update_progress(0.8)
@@ -469,7 +500,33 @@ class MainWindow:
                     state="normal"
                 )
             )
+    def show_history(self):
 
+        history = (
+            self.history_manager.get_history()
+        )
+
+        print("\n===== HISTORY =====")
+
+        for item in history:
+
+            print(
+                f"\n{item['timestamp']}"
+            )
+
+            print(
+                f"{item['source_language']} -> "
+                f"{item['target_language']}"
+            )
+
+            print(
+                item['source_text']
+            )
+
+            print(
+                item['translated_text']
+            )
+            
     def run(self):
 
         self.root.mainloop()
