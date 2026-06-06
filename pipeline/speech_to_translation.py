@@ -1,3 +1,5 @@
+import threading
+
 from audio.recorder import record_audio
 
 from stt.whisper_engine import (
@@ -103,7 +105,14 @@ def process_audio(
             "Speaking..."
         )
 
-    speak(translated_text)
+    threading.Thread(
+        target=speak,
+        args=(
+            translated_text,
+            target_lang
+        ),
+        daemon=True
+    ).start()
 
     # ==========================
     # Return Results
