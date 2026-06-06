@@ -1,0 +1,13 @@
+# Core ML
+openai-whisper
+transformers>=4.30.0
+torch>=2.0.0
+
+# Audio I/O
+sounddevice          # cross-platform mic recording + playback (replaces winsound)
+soundfile            # WAV read/write
+scipy                # scipy.io.wavfile for saving recordings
+numpy
+
+# Removed: librosa — no longer needed since recorder saves at 16kHz directly
+# Removed: winsound — Windows-only, replaced by sounddevice

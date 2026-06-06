@@ -58,6 +58,10 @@ class AudioStream:
 
         print("Audio stream stopped.")
 
-    def get_chunk(self):
-
-        return self.audio_queue.get()
+    # UPDATED: Added timeout parameter and try-except block
+    def get_chunk(self, timeout=None):
+        
+        try:
+            return self.audio_queue.get(timeout=timeout)
+        except queue.Empty:
+            return None

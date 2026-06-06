@@ -17,6 +17,7 @@ from streaming.stream_manager import (
     StreamManager
 )
 
+
 class MainWindow:
 
     def __init__(self, model_manager):
@@ -626,34 +627,32 @@ class MainWindow:
         )
 
     def start_live_translation(self):
+            if self.stream_manager and self.stream_manager.running:
+                return
 
-        if self.stream_manager:
-            return
+            self.start_live_button.configure(state="disabled")
+            self.record_button.configure(state="disabled")
 
-        target_language = (
-            self.target_lang_menu.get()
-        )
+            # FIX: Get the Source Language from the GUI Dropdown
+            source_language = self.source_lang_menu.get()
+            if source_language == "Auto Detect":
+                source_code = None
+            else:
+                source_code = LanguageManager.get_code(source_language)
 
-        target_code = (
-            LanguageManager.get_code(
-                target_language
-            )
-        )
+            target_language = self.target_lang_menu.get()
+            target_code = LanguageManager.get_code(target_language)
 
-        self.stream_manager = (
-            StreamManager(
+            # FIX: Pass BOTH source_code and target_code to the StreamManager
+            self.stream_manager = StreamManager(
                 self.model_manager,
+                source_code,
                 target_code
             )
-        )
 
-        self.stream_manager.start_streaming()
-
-        self.update_status(
-            "Live Streaming"
-        )
-
-        self.update_live_display()
+            self.stream_manager.start_streaming()
+            self.update_status("Live Streaming")
+            self.update_live_display()
 
 
     def stop_live_translation(self):
@@ -663,7 +662,12 @@ class MainWindow:
 
         self.stream_manager.stop_streaming()
 
-        self.stream_manager = None
+        # REMOVED: self.stream_manager = None 
+        # We must leave the manager alive so the UI loop can fetch the final delayed translations!
+
+        # UPDATED: Re-enable buttons
+        self.start_live_button.configure(state="normal")
+        self.record_button.configure(state="normal")
 
         self.update_status(
             "Live Stopped"
@@ -691,6 +695,9 @@ class MainWindow:
                     "end",
                     text + "\n"
                 )
+                
+                # UPDATED: Auto-scroll
+                self.source_textbox.see("end")
 
             while (
                 not self.stream_manager
@@ -708,10 +715,14 @@ class MainWindow:
                     "end",
                     text + "\n"
                 )
+                
+                # UPDATED: Auto-scroll
+                self.translation_textbox.see("end")
 
-        except:
-            pass
+        except Exception as e:
+            print(f"UI Update Error: {e}")
 
+        # Keeps looping to pull the delayed final translation even after Stop
         self.root.after(
             100,
             self.update_live_display
