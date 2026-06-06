@@ -13,7 +13,9 @@ from translation.language_manager import (
 from pipeline.speech_to_translation import (
     process_audio
 )
-
+from streaming.stream_manager import (
+    StreamManager
+)
 
 class MainWindow:
 
@@ -34,6 +36,8 @@ class MainWindow:
         self.root.geometry("900x700")
 
         self.create_layout()
+
+        self.stream_manager = None
 
     def create_layout(self):
 
@@ -195,6 +199,35 @@ class MainWindow:
         )
 
         self.record_button.pack(
+            side="left",
+            padx=10
+        )
+        self.start_live_button = (
+            ctk.CTkButton(
+                self.button_frame,
+                text="🟢 Live Start",
+                width=150,
+                height=45,
+                command=self.start_live_translation
+            )
+        )
+
+        self.start_live_button.pack(
+            side="left",
+            padx=10
+        )
+
+        self.stop_live_button = (
+            ctk.CTkButton(
+                self.button_frame,
+                text="🔴 Live Stop",
+                width=150,
+                height=45,
+                command=self.stop_live_translation
+            )
+        )
+
+        self.stop_live_button.pack(
             side="left",
             padx=10
         )
@@ -590,6 +623,98 @@ class MainWindow:
 
         self.update_status(
             f"Exported: {filename}"
+        )
+
+    def start_live_translation(self):
+
+        if self.stream_manager:
+            return
+
+        target_language = (
+            self.target_lang_menu.get()
+        )
+
+        target_code = (
+            LanguageManager.get_code(
+                target_language
+            )
+        )
+
+        self.stream_manager = (
+            StreamManager(
+                self.model_manager,
+                target_code
+            )
+        )
+
+        self.stream_manager.start_streaming()
+
+        self.update_status(
+            "Live Streaming"
+        )
+
+        self.update_live_display()
+
+
+    def stop_live_translation(self):
+
+        if not self.stream_manager:
+            return
+
+        self.stream_manager.stop_streaming()
+
+        self.stream_manager = None
+
+        self.update_status(
+            "Live Stopped"
+        )
+
+
+    def update_live_display(self):
+
+        if not self.stream_manager:
+            return
+
+        try:
+
+            while (
+                not self.stream_manager
+                .transcript_queue.empty()
+            ):
+
+                text = (
+                    self.stream_manager
+                    .transcript_queue.get()
+                )
+
+                self.source_textbox.insert(
+                    "end",
+                    text + "\n"
+                )
+
+            while (
+                not self.stream_manager
+                .translation_display_queue
+                .empty()
+            ):
+
+                text = (
+                    self.stream_manager
+                    .translation_display_queue
+                    .get()
+                )
+
+                self.translation_textbox.insert(
+                    "end",
+                    text + "\n"
+                )
+
+        except:
+            pass
+
+        self.root.after(
+            100,
+            self.update_live_display
         )
 
     def run(self):
