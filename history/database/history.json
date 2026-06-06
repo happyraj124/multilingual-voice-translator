@@ -1,16 +1,9 @@
 [
     {
-        "timestamp": "2026-06-06 09:44:08",
-        "source_language": "Hindi",
-        "target_language": "English",
-        "source_text": "तुम क्या कर ले हु और तुम्मारा नाफ क्या है।",
-        "translated_text": "What you do and what you gain."
-    },
-    {
-        "timestamp": "2026-06-06 10:12:24",
+        "timestamp": "2026-06-06 11:34:23",
         "source_language": "Auto Detect",
-        "target_language": "English",
-        "source_text": "मन के तो बैका हो वे नहीं ना आ मन ने",
-        "translated_text": "They have no minds, nor have they any minds."
+        "target_language": "Hindi",
+        "source_text": "What is your name? What are you doing? Is everything fine? Tell me please!",
+        "translated_text": "आपका नाम क्या है? आप क्या कर रहे हैं? सब कुछ ठीक है? कृपया मुझे बताओ!"
     }
 ]
