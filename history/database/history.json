@@ -1,9 +1,9 @@
 [
     {
-        "timestamp": "2026-06-06 11:34:23",
-        "source_language": "Auto Detect",
-        "target_language": "Hindi",
-        "source_text": "What is your name? What are you doing? Is everything fine? Tell me please!",
-        "translated_text": "आपका नाम क्या है? आप क्या कर रहे हैं? सब कुछ ठीक है? कृपया मुझे बताओ!"
+        "timestamp": "2026-06-08 11:09:41",
+        "source_language": "Hindi",
+        "target_language": "English",
+        "source_text": "मैं ताना खा लिया। क्या तुम भी ताना खा लिया? कटर नहीं खायो तो क्यों नहीं खायो?",
+        "translated_text": "I have eaten a banana. Have you eaten a banana too? If you don't eat a cutter, why don't you?"
     }
 ]
