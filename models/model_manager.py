@@ -2,6 +2,7 @@
 models/model_manager.py
 """
 
+import os
 import whisper
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from tts.mms_tts import load_model
@@ -13,10 +14,12 @@ class ModelManager:
         self.whisper_model    = None
         self.translator_model = None
         self.tokenizer        = None
+        # Default to 'medium', but allow 'base' or 'tiny' for free tiers
+        self.whisper_size = os.getenv("WHISPER_MODEL", "medium")
 
     def load_models(self) -> None:
-        print("\nLoading Whisper Model...")
-        self.whisper_model = whisper.load_model("medium")
+        print(f"\nLoading Whisper Model ({self.whisper_size})...")
+        self.whisper_model = whisper.load_model(self.whisper_size)
         print("Whisper Loaded!")
 
         model_name = "facebook/nllb-200-distilled-600M"

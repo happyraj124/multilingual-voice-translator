@@ -2,12 +2,21 @@
 openai-whisper
 transformers>=4.30.0
 torch>=2.0.0
+sentencepiece
 
-# Audio I/O
-sounddevice          # cross-platform mic recording + playback (replaces winsound)
-soundfile            # WAV read/write
-scipy                # scipy.io.wavfile for saving recordings
+# Audio
+sounddevice
+soundfile
+scipy
 numpy
 
-# Removed: librosa — no longer needed since recorder saves at 16kHz directly
-# Removed: winsound — Windows-only, replaced by sounddevice
+# Web framework
+gradio>=4.0.0
+fastapi
+uvicorn
+python-multipart
+
+# Voice preservation
+praat-parselmouth
+librosa
+# pyrubberband  ← uncomment if rubberband CLI is available on your server
