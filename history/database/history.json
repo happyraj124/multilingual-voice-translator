@@ -1,9 +1,9 @@
 [
     {
-        "timestamp": "2026-06-08 11:09:41",
+        "timestamp": "2026-06-14 09:03:01",
         "source_language": "Hindi",
-        "target_language": "English",
-        "source_text": "मैं ताना खा लिया। क्या तुम भी ताना खा लिया? कटर नहीं खायो तो क्यों नहीं खायो?",
-        "translated_text": "I have eaten a banana. Have you eaten a banana too? If you don't eat a cutter, why don't you?"
+        "target_language": "Spanish",
+        "source_text": "मेरा नाम नूइनी सुनाजे",
+        "translated_text": "Mi nombre es Nuini Sunaje."
     }
 ]
